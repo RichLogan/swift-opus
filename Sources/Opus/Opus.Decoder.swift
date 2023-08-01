@@ -51,14 +51,14 @@ public extension Opus.Decoder {
 		}
 	}
 
-	func decode(_ input: UnsafeBufferPointer<UInt8>, to output: AVAudioPCMBuffer) throws {
+       func decode(_ input: UnsafeBufferPointer<UInt8>?, to output: AVAudioPCMBuffer, count frames: AVAudioFrameCount? = nil) throws {
 		let decodedCount: Int
 		switch output.format.commonFormat {
 		case .pcmFormatInt16:
-			let output = UnsafeMutableBufferPointer(start: output.int16ChannelData![0], count: Int(output.frameCapacity))
+		        let output = UnsafeMutableBufferPointer(start: output.int16ChannelData![0], count: Int(frames ?? output.frameCapacity))
 			decodedCount = try decode(input, to: output)
 		case .pcmFormatFloat32:
-			let output = UnsafeMutableBufferPointer(start: output.floatChannelData![0], count: Int(output.frameCapacity))
+			let output = UnsafeMutableBufferPointer(start: output.floatChannelData![0], count: Int(frames ?? output.frameCapacity))
 			decodedCount = try decode(input, to: output)
 		default:
 			throw Opus.Error.badArgument
@@ -73,11 +73,11 @@ public extension Opus.Decoder {
 // MARK: Private decode methods
 
 extension Opus.Decoder {
-	private func decode(_ input: UnsafeBufferPointer<UInt8>, to output: UnsafeMutableBufferPointer<Int16>) throws -> Int {
+	private func decode(_ input: UnsafeBufferPointer<UInt8>?, to output: UnsafeMutableBufferPointer<Int16>) throws -> Int {
 		let decodedCount = opus_decode(
 			decoder,
-			input.baseAddress!,
-			Int32(input.count),
+			input?.baseAddress,
+			Int32(input?.count ?? 0),
 			output.baseAddress!,
 			Int32(output.count),
 			0
@@ -88,11 +88,11 @@ extension Opus.Decoder {
 		return Int(decodedCount)
 	}
 
-	private func decode(_ input: UnsafeBufferPointer<UInt8>, to output: UnsafeMutableBufferPointer<Float32>) throws -> Int {
+	private func decode(_ input: UnsafeBufferPointer<UInt8>?, to output: UnsafeMutableBufferPointer<Float32>) throws -> Int {
 		let decodedCount = opus_decode_float(
 			decoder,
-			input.baseAddress!,
-			Int32(input.count),
+			input?.baseAddress,
+			Int32(input?.count ?? 0),
 			output.baseAddress!,
 			Int32(output.count),
 			0
