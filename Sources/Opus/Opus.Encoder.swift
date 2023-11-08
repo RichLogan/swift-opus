@@ -106,3 +106,11 @@ extension Opus.Encoder {
 		return Int(encodedSize)
 	}
 }
+
+public extension Opus.Encoder {
+	func ctl(request: Int32, args: [CVarArg]) -> Int32 {
+		withVaList(args) {
+			opus_encoder_ctl_va_list(encoder, request, $0);
+		}
+	}
+}
