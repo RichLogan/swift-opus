@@ -108,9 +108,13 @@ extension Opus.Encoder {
 }
 
 public extension Opus.Encoder {
-	func ctl(request: Int32, args: [CVarArg]) -> Int32 {
-		withVaList(args) {
+	func ctl(request: Int32, args: [CVarArg]) throws -> Int {
+		let result = withVaList(args) {
 			opus_encoder_ctl_va_list(encoder, request, $0);
 		}
+		if result < 0 {
+			throw Opus.Error(result);
+		}
+		return Int(result)
 	}
 }
