@@ -69,4 +69,29 @@ final class OpusRoundTripTests: XCTestCase {
 		// 	XCTAssert(delta < epsilon, String(delta))
 		// }
 	}
+
+	func testNumberSamples() throws {
+		let frames: AVAudioFrameCount = 480
+		let format = AVAudioFormat(opusPCMFormat: .float32, sampleRate: .opus48khz, channels: 1)!
+		let input = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames)!
+		input.frameLength = input.frameCapacity // Silence
+		let encoder = try Opus.Encoder(format: input.format)
+		let decoder = try Opus.Decoder(format: input.format)
+		var data = Data(count: 1500)
+		_ = try encoder.encode(input, to: &data)
+		let samples = try decoder.getNumberSamples(data)
+		XCTAssertEqual(frames, samples)
+	}
+
+	func testNumberChannels() throws {
+		let targetChannels: AVAudioChannelCount = 2
+		let format = AVAudioFormat(opusPCMFormat: .float32, sampleRate: .opus48khz, channels: targetChannels)!
+		let input = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: .opusMax)!
+		input.frameLength = input.frameCapacity // Silence
+		let encoder = try Opus.Encoder(format: input.format)
+		var data = Data(count: 1500)
+		_ = try encoder.encode(input, to: &data)
+		let channels = try Opus.Packet.getNumberChannels(data)
+		XCTAssertEqual(targetChannels, channels)
+	}
 }
