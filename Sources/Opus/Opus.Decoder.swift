@@ -32,6 +32,17 @@ public extension Opus {
 				throw error
 			}
 		}
+
+		func getNumberSamples(_ input: Data) throws -> AVAudioFrameCount {
+			try input.withUnsafeBytes {
+				let input = $0.bindMemory(to: UInt8.self)
+				let sampleCount = opus_decoder_get_nb_samples(decoder, input.baseAddress!, Int32($0.count))
+				if sampleCount < 0 {
+					throw Opus.Error(sampleCount)
+				}
+				return AVAudioFrameCount(sampleCount)
+			}
+		}
 	}
 }
 
